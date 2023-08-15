@@ -25,7 +25,7 @@ class NeuralNetwork:
         self.weights1 = np.random.rand(
             self.input.shape[1], 4
         )  # considering we have 4 nodes in the hidden layer
-        self.weights2 = np.random.rand(4, 3)
+        self.weights2 = np.random.rand(4, 1)
         self.y = y
         self.output = np.zeros(y.shape)
 
@@ -57,7 +57,7 @@ class NeuralNetwork:
 
 NN = NeuralNetwork(X, y)
 for i in range(1500):  # trains the NN 1,000 times
-    if i % 3000 == 0:
+    if i % 100 == 0:
         print("for iteration # " + str(i) + "\n")
         print("Input : \n" + str(X))
         print("Actual Output: \n" + str(y))

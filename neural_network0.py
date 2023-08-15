@@ -11,8 +11,8 @@ def sigmoid(x):
 
 
 def sigmoid_drtv(x):
-    # return x * (1 - x)
-    return sigmoid(x) * (1 - sigmoid(x))
+    return x * (1 - x)
+    # return sigmoid(x) * (1 - sigmoid(x))
 
 
 class NeuralNetwork:
@@ -32,18 +32,15 @@ class NeuralNetwork:
         self.w1 = np.random.rand(inputN, hiddenN)
         self.w2 = np.random.rand(hiddenN, outputN)
 
-    def feed_fwd(self):
-        self.hiddenL = sigmoid(np.dot(self.inputL, self.w1))
-        # print('x', X)
-        # print(w1)
-        # print(np.dot(X, w1))
+    def feed_fwd(self, inputL=None):
+        if inputL is None:
+            inputL = self.inputL
+        self.hiddenL = sigmoid(np.dot(inputL, self.w1))
         self.output_res = sigmoid(np.dot(self.hiddenL, self.w2))
         return self.output_res
 
     def back_propogate(self):
         loss_calc = 2 * (self.y - self.outputL) * sigmoid_drtv(self.outputL)
-        # first param is the 'input'
-        # print("a", hiddenL, hiddenL.T)
         w2_delta = np.dot(self.hiddenL.T, loss_calc)
         w1_delta = np.dot(
             self.inputL.T, np.dot(loss_calc, self.w2.T) * sigmoid_drtv(self.hiddenL)
@@ -53,7 +50,7 @@ class NeuralNetwork:
         self.w1 += w1_delta
 
     def train(self):
-        outputL = self.feed_fwd()
+        self.outputL = self.feed_fwd()
         self.back_propogate()
 
 
@@ -65,7 +62,7 @@ nn = NeuralNetwork(X, Y)
 
 for i in range(1500):
     nn.train()
-    if i % 3000 == 0:
+    if i % 100 == 0:
         print("for iteration # " + str(i))
         print("Input : \n" + str(X))
         print("Actual Output: \n" + str(Y))
@@ -74,5 +71,10 @@ for i in range(1500):
             "Loss: " + str(np.mean(np.square(Y - nn.feed_fwd())))
         )  # mean sum squared loss
 
-# test
-# nn.feed_fwd([1,0,0])
+# test new values
+if False:
+    print("\n\n---- Final Testing ---- ")
+    print("Input : \n" + str(X))
+    print("Actual Output: \n" + str(Y))
+    print("Predicted Output: \n" + str(nn.feed_fwd([0, 0, 1])))
+    print("Loss: " + str(np.mean(np.square([[0]] - nn.feed_fwd([0, 0, 1])))))
