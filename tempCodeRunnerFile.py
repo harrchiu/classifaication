@@ -1,8 +1,7 @@
-nt("for iteration # " + str(i) + "\n")
-        print("Input : \n" + str(X))
-        print("Actual Output: \n" + str(y))
-        print("Predicted Output: \n" + str(NN.feedforward()))
-        print(
-            "Loss: \n" + str(np.mean(np.square(y - NN.feedforward())))
-        )  # mean sum squared loss
-        pri
+
+def sigmoid_drtv(x):
+    return x * (1 - x)
+    # return sigmoid(x) * (1 - sigmoid(x))
+
+
+class NeuralNetwork:
