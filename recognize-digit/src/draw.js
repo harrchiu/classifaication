@@ -1,4 +1,5 @@
-import fs from 'fs';
+// import { readFileSync } from 'fs/promises';
+import raw from './w1.txt';
 
 const sigmoid = (mat) => {
   for (let i = 0; i < mat.length; i++) {
@@ -69,20 +70,21 @@ const test = [
 const [output, ...inp] = test;
 const input = [inp];
 
-const w1 = fs
-  .readFileSync('w1.txt', 'utf8')
+const w1 = fetch('w1.txt', 'utf8')
   .split('\n')
   .map((line) => line.split(','));
 w1.pop(); // blank ending line
 
-const w2 = fs
-  .readFileSync('w2.txt', 'utf8')
+const w2 = fetch('w2.txt', 'utf8')
   .split('\n')
   .map((line) => line.split(','));
 w2.pop(); // blank ending line
 
-const a = multiply(input, w1);
-const b = sigmoid(a);
-const c = multiply(b, w2);
-const d = softmax(c[0]);
-console.log(d);
+export const eval_grid = (input) => {
+  const a = multiply(input, w1);
+  const b = sigmoid(a);
+  const c = multiply(b, w2);
+  const d = softmax(c[0]);
+  console.log(d);
+  return d;
+};

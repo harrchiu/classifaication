@@ -71,8 +71,8 @@ class NeuralNetwork:
 
         # loss_calc_2=((l2).dot(error.T)).T*d_sigmoid(x_l1p)
 
-        self.w2 -= w2_delta*0.001
-        self.w1 -= w1_delta*0.001
+        # self.w2 -= w2_delta*0.001
+        # self.w1 -= w1_delta*0.001
         # print('training', X, Y, self.out)
         # print(w2_delta, w1_delta)
 
@@ -112,7 +112,7 @@ with open('sample_num.txt','r') as file:
 nn = NeuralNetwork(inputN, hiddenN, outputN, loadData)
 
 accuracies = []
-for epoch in range(2000):
+for epoch in range(10000):
 
     # pre shuffle acc max: 0.3671875
     np.random.shuffle(data)
@@ -128,19 +128,18 @@ for epoch in range(2000):
         Y = np.zeros((len(outputs), outputN), dtype=float)
         for ind, ans in enumerate(outputs):
             Y[ind][int(ans)] = 1.0
-            # Y[ind][0] = outputs[ind]
         nn.train(X, Y)
         correct = 0
         for ind,res in enumerate(nn.out):
             if np.argmax(res) == int(outputs[ind]):
                 correct += 1
-        accuracies.append(correct*1.0/batch_size)
+        accuracies.append(correct/len(X))
 
         sample_num += batch_size
     sample_num = 0
 
     if epoch % 10 == 0:
-        print('accuracy:', accuracies[-1])
+        print('accuracy:', np.average(accuracies[-10:-1]))
         print("--- epoch #", epoch)
         # print("Input : \n" + str(X[0]))
         print("Actual Output: \n" + str(Y[0]))

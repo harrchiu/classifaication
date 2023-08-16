@@ -1,4 +1,5 @@
 import numpy as np
 
-for file in ['w1','w2']:
-    np.savetxt(file + '.txt', np.load(file + '.npy'), delimiter=',', fmt='%5.7f')
+with open('recognize-digit/src/weights.ts', 'w') as file:
+    file.write('export const w1 =' + str(np.load('w1.npy').tolist()))
+    file.write('export const w2 =' + str(np.load('w2.npy').tolist()))
