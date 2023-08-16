@@ -52,8 +52,9 @@ outputN = 10
 # hiddenN = 128
 # outputN = 4
 data = np.loadtxt(csvfile, delimiter=',')
+print('start')
 nn = NeuralNetwork()
-
+print('hi')
 np.random.shuffle(data)
 
 X = data[:,1:]

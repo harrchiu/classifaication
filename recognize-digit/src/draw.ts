@@ -1,27 +1,42 @@
-// import { readFileSync } from 'fs/promises';
-import raw from './w1.txt';
+import { w1, w2 } from './weights';
 
-const sigmoid = (mat) => {
+// prevent overflow?
+const _exp = (x: number) => {
+  const ans = Math.exp(x);
+  if (!Number.isFinite(ans)) {
+    console.log('returning', x, ans, Number.MAX_VALUE);
+    return Number.MAX_VALUE - 1;
+  }
+  return ans;
+};
+
+const sigmoid = (mat: number[][]) => {
   for (let i = 0; i < mat.length; i++) {
     for (let j = 0; j < mat[0].length; j++) {
-      mat[i][j] = 1 / (1 + Math.exp(-mat[i][j]));
+      mat[i][j] = 1 / (1 + _exp(-mat[i][j]));
     }
   }
   return mat;
 };
 
-const softmax = (x) => {
-  let total = 0;
-  for (const v of x) {
-    total += Math.exp(v);
-  }
-  return x.map((val) => Math.exp(val) / total);
+const arrMax = (x: number[]) => {
+  return Math.max.apply(null, x);
+};
+const arrSum = (x: number[]) => {
+  return x.reduce((agg, val) => agg + val, 0);
 };
 
-const multiply = (mat1, mat2) => {
+const softmax = (x: number[]) => {
+  const max = arrMax(x);
+  const exp_element = x.map((val) => _exp(val - max));
+  const sum = arrSum(exp_element);
+  return exp_element.map((val) => val / sum);
+};
+
+const multiply = (mat1: number[][], mat2: number[][]) => {
   if (mat1?.[0].length !== mat2?.length) {
     console.log('dims do not match, ', mat1?.[0].length, mat2?.length);
-    return;
+    return [[]];
   }
 
   const rows = mat1.length;
@@ -70,21 +85,14 @@ const test = [
 const [output, ...inp] = test;
 const input = [inp];
 
-const w1 = fetch('w1.txt', 'utf8')
-  .split('\n')
-  .map((line) => line.split(','));
-w1.pop(); // blank ending line
-
-const w2 = fetch('w2.txt', 'utf8')
-  .split('\n')
-  .map((line) => line.split(','));
-w2.pop(); // blank ending line
-
-export const eval_grid = (input) => {
+export const eval_grid = (input: number[][]) => {
   const a = multiply(input, w1);
   const b = sigmoid(a);
   const c = multiply(b, w2);
   const d = softmax(c[0]);
-  console.log(d);
+  // console.log('a', a);
+  // console.log('b', b);
+  // console.log('c', c);
+  // console.log('res', d);
   return d;
 };

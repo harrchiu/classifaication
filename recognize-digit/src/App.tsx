@@ -5,15 +5,16 @@ import { eval_grid } from './draw';
 
 const Cell: React.FC<
   {
-    darkness: number;
+    value: number;
   } & HTMLProps<HTMLDivElement>
-> = ({ darkness, ...props }) => {
+> = ({ value, ...props }) => {
+  const darkness = 255 - value;
   return (
     <div
       className='grid-cell'
       style={{
         backgroundColor: `rgb(${darkness}, ${darkness}, ${darkness})`,
-        border: '0.5px solid black',
+        // border: '0.1px solid black',
       }}
       {...props}
     ></div>
@@ -21,10 +22,27 @@ const Cell: React.FC<
 };
 
 const Grid: React.FC<{}> = ({}) => {
-  const N = 28;
+  const sz = 28;
+  const scale = 2;
+  const N = scale * 28;
   const [grid, setGrid] = useState<number[][]>(
-    new Array(N).fill(0).map(() => new Array(N).fill(255))
+    new Array(N).fill(0).map(() => new Array(N).fill(0))
   );
+
+  const predict = () => {
+    const shortened = new Array(sz).fill(0).map(() => new Array(sz).fill(0));
+    for (let r = 0; r < sz; r += 1) {
+      for (let c = 0; c < sz; c += 1) {
+        for (let a = 0; a < scale; a += 1) {
+          for (let b = 0; b < scale; b += 1) {
+            shortened[r][c] += grid[r * scale + a][c * scale + b];
+          }
+        }
+        shortened[r][c] /= scale * scale;
+      }
+    }
+    return eval_grid([shortened.flat()]);
+  };
 
   return (
     <>
@@ -36,11 +54,12 @@ const Grid: React.FC<{}> = ({}) => {
                 return (
                   <Cell
                     key={`cell-${rowId}-${colId}`}
-                    darkness={grid[rowId][colId]}
+                    value={grid[rowId][colId]}
                     onMouseEnter={() => {
                       const newGrid = [...grid];
-                      newGrid[rowId][colId] = 0;
+                      newGrid[rowId][colId] = 255;
                       setGrid(newGrid);
+                      console.log(newGrid.flat());
                     }}
                   ></Cell>
                 );
@@ -49,9 +68,13 @@ const Grid: React.FC<{}> = ({}) => {
           );
         })}
       </div>
-      <div style={{ display: ' flex', justifyContent: 'row' }}>
-        {eval_grid(grid.flat()).map((res: number, ind: number) => {
-          return <div style={{ fontSize: `${res * 20 + 4}px` }}>{ind}</div>;
+      <div style={{ display: ' flex', height: '40px', justifyContent: 'row' }}>
+        {predict().map((res: number, ind: number) => {
+          return (
+            <div key={`dig-${ind}`} style={{ fontSize: `${res * 20 + 4}px` }}>
+              {ind}
+            </div>
+          );
         })}
       </div>
     </>
