@@ -12,83 +12,113 @@ def sigmoid(x):
 
 
 def sigmoid_drtv(x):
-    return x * (1 - x)
-    # return sigmoid(x) * (1 - sigmoid(x))
+    # return x * (1 - x)
+    return sigmoid(x) * (1 - sigmoid(x))
 
+
+def softmax(x):
+    exponents = np.exp(x)
+    return exponents/np.sum(exponents)
+
+def render_arr(arr):
+    vals = np.reshape(arr, (28,28))
+    plt.imshow(np.array(vals, dtype=float))
+    plt.show()
 
 class NeuralNetwork:
-    def __init__(self, X, Y):
-        self.y = Y
-
+    def __init__(self, inputN, hiddenN, outputN, loadData):
         # layers/nodes
-        self.inputL = X  # np.zeros_like(X)
         self.hiddenL = None
-        self.outputL = np.zeros_like(Y)
-        inputN = len(X[0])
-        hiddenN = 4
-        outputN = len(Y[0])
+        self.outputL = np.zeros(outputN)
 
         # weights/edges
         # inputL to hiddenL; hiddenL to outputL
-        self.w1 = np.random.rand(inputN, hiddenN)
-        self.w2 = np.random.rand(hiddenN, outputN)
+        if loadData:
+            self.w1 = np.load('w1.npy')
+            self.w2 = np.load('w2.npy')
+        else:
+            self.w1 = np.random.rand(inputN, hiddenN)
+            self.w2 = np.random.rand(hiddenN, outputN)
 
-    def feed_fwd(self, inputL=None):
-        if inputL is None:
-            inputL = self.inputL
-        self.hiddenL = sigmoid(np.dot(inputL, self.w1))
-        self.output_res = sigmoid(np.dot(self.hiddenL, self.w2))
+    # pass through input of X
+    def feed_fwd(self, X):
+        self.hiddenL = sigmoid(np.dot(X, self.w1))
+        self.output_res = softmax(sigmoid(np.dot(self.hiddenL, self.w2)))
         return self.output_res
 
-    def back_propogate(self):
-        loss_calc = 2 * (self.y - self.outputL) * sigmoid_drtv(self.outputL)
+    # use results Y to adjust weights
+    def back_propogate(self, X, Y):
+        loss_calc = 2 * (Y - self.outputL) * sigmoid_drtv(self.outputL)
         w2_delta = np.dot(self.hiddenL.T, loss_calc)
         w1_delta = np.dot(
-            self.inputL.T, np.dot(loss_calc, self.w2.T) * sigmoid_drtv(self.hiddenL)
+            X.T, np.dot(loss_calc, self.w2.T) * sigmoid_drtv(self.hiddenL)
         )
 
         self.w2 += w2_delta
         self.w1 += w1_delta
 
-    def train(self):
-        self.outputL = self.feed_fwd()
-        self.back_propogate()
+    def train(self, X, Y):
+        self.outputL = self.feed_fwd(X)
+        self.back_propogate(X, Y)
 
+    def saveWeights(self):
+        np.save('w1.npy', self.w1)
+        np.save('w2.npy', self.w2)
+
+csvfile = open('mnist_train.csv')
+data = np.loadtxt(csvfile, delimiter=',')
+TRAINING_DATA_LEN = 60000
+loadData = False # set false to start training from scratch
+batch_size = 40
 
 # load set
-with open('mnist_train.csv', newline='') as csvfile:
-    reader = csv.reader(csvfile, delimiter=' ')
-    for [row] in reader:
-        values = row.split(',')[1:]
-        values = np.reshape(values, (28,28))
-        plt.imshow(np.array(values, dtype=float))
-        plt.show()
-        break 
+with open('sample_num.txt','r') as file:
+    sample_num = int(file.read())
+    if loadData == False or sample_num + batch_size >= TRAINING_DATA_LEN:
+        sample_num = 0
 
+inputN = 28*28
+hiddenN = 2
+outputN = 10
+nn = NeuralNetwork(inputN, hiddenN, outputN, loadData)
 
-# initialize weights (inputs x hidden, hidden x out)
-# each weight column belongs to one output row
-X = np.array(([0, 0, 1], [0, 1, 1], [1, 0, 1], [1, 1, 1]), dtype=float)
-Y = np.array(([0], [1], [1], [0]), dtype=float)
-nn = NeuralNetwork(X, Y)
+for epoch in range(100):
 
-for i in range(1500):
-    nn.train()
-    if False:
-        if i % 100 == 0:
-            print("for iteration # " + str(i))
-            print("Input : \n" + str(X))
-            print("Actual Output: \n" + str(Y))
-            print("Predicted Output: \n" + str(nn.feed_fwd()))
-            print(
-                "Loss: " + str(np.mean(np.square(Y - nn.feed_fwd())))
-            )  # mean sum squared loss
+    # get current slice of training data and call function
+    while sample_num < TRAINING_DATA_LEN:
+        # print('loading samples:', sample_num,'to', sample_num+batch_size-1)
+        with open('sample_num.txt','w') as file:
+            file.write(str(sample_num+batch_size))
 
-print(nn.feed_fwd([0,0,1]))
+        training_data = data[sample_num:sample_num+batch_size]
+        X = training_data[:,1:]
+        outputs = training_data[:,0]
+        Y = np.zeros((len(outputs),10), dtype=float)
+        for ind, ans in enumerate(outputs):
+            Y[ind][int(ans)] = 1.0
+
+        nn.train(X, Y)
+        sample_num += batch_size
+
+    print("--- epoch #", epoch)
+    # print("Input : \n" + str(X))
+    print("Actual Output: \n" + str(Y[0]))
+    print("Predicted Output: \n" + str(nn.feed_fwd(X)[0]))
+    print(
+        "Loss: " + str(np.mean(np.square(Y - nn.feed_fwd(X))))
+    )  # mean sum squared loss
+    sample_num = 0
+    nn.saveWeights()
+
 # test new values
-if False:
+if False and q % 10 == 0:
+    next_ind = np.random.randint(TRAINING_DATA_LEN)
+    sample_input = data[next_ind][1:]
+    sample_output = data[next_ind][0]
+
     print("\n\n---- Final Testing ---- ")
-    print("Input : \n" + str(X))
-    print("Actual Output: \n" + str(Y))
-    print("Predicted Output: \n" + str(nn.feed_fwd([0, 0, 1])))
-    print("Loss: " + str(np.mean(np.square([[0]] - nn.feed_fwd([0, 0, 1])))))
+    # print("Input : \n" + str(X))
+    print("Actual Output: \n" + str(sample_output))
+    print("Predicted Output: \n" + str(nn.feed_fwd(sample_input)))
+    print("Loss: " + str(np.mean(np.square([[sample_output]] - nn.feed_fwd(sample_input)))))
+    render_arr(sample_input)
