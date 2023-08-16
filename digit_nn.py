@@ -9,11 +9,13 @@ import matplotlib.pyplot as plt
 
 # apply on entire array
 def sigmoid(x):
+    x = np.clip(x, -20, 20)
     return 1 / (1 + np.exp(-x))
 
-
 def sigmoid_drtv(x):
+    x = np.clip(x, -20, 20)
     return (np.exp(-x))/((np.exp(-x)+1)**2)
+
     # return x * (1 - x)
     # return sigmoid(x) * (1 - sigmoid(x))
 
@@ -42,10 +44,8 @@ class NeuralNetwork:
             self.w1 = np.load('w1.npy')
             self.w2 = np.load('w2.npy')
         else:
-            # self.w1 = np.random.rand(inputN, hiddenN)
-            # self.w2 = np.random.rand(hiddenN, outputN)
-            self.w1 = np.random.uniform(-1.,1.,size=(inputN, hiddenN))/np.sqrt(inputN*hiddenN).astype(np.float32)
-            self.w2 = np.random.uniform(-1.,1.,size=(hiddenN, outputN))/np.sqrt(hiddenN*outputN).astype(np.float32)
+            self.w1 = (np.random.uniform(-1.,1.,size=(inputN, hiddenN))/np.sqrt(inputN*hiddenN)).astype(np.float32)
+            self.w2 = (np.random.uniform(-1.,1.,size=(hiddenN, outputN))/np.sqrt(hiddenN*outputN)).astype(np.float32)
     
     # pass through input of X
     def feed_fwd(self, X):
@@ -87,7 +87,7 @@ class NeuralNetwork:
 
 TRAINING_DATA_LEN = 60000
 csvfile = open('mnist_train.csv')
-batch_size = 256
+batch_size = 128
 inputN = 28*28
 hiddenN = 128
 outputN = 10
@@ -114,6 +114,8 @@ nn = NeuralNetwork(inputN, hiddenN, outputN, loadData)
 accuracies = []
 for epoch in range(2000):
 
+    # pre shuffle acc max: 0.3671875
+    np.random.shuffle(data)
     # get current slice of training data and call function
     while sample_num < TRAINING_DATA_LEN:
         # print('loading samples:', sample_num,'to', sample_num+batch_size-1)
@@ -138,7 +140,7 @@ for epoch in range(2000):
     sample_num = 0
 
     if epoch % 10 == 0:
-        print(accuracies[-1])
+        print('accuracy:', accuracies[-1])
         print("--- epoch #", epoch)
         # print("Input : \n" + str(X[0]))
         print("Actual Output: \n" + str(Y[0]))
