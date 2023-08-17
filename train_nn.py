@@ -71,8 +71,8 @@ class NeuralNetwork:
 
         # loss_calc_2=((l2).dot(error.T)).T*d_sigmoid(x_l1p)
 
-        # self.w2 -= w2_delta*0.001
-        # self.w1 -= w1_delta*0.001
+        self.w2 -= w2_delta*0.001
+        self.w1 -= w1_delta*0.001
         # print('training', X, Y, self.out)
         # print(w2_delta, w1_delta)
 
@@ -87,9 +87,9 @@ class NeuralNetwork:
 
 TRAINING_DATA_LEN = 60000
 csvfile = open('mnist_train.csv')
-batch_size = 128
+batch_size = 32
 inputN = 28*28
-hiddenN = 128
+hiddenN = 160
 outputN = 10
 # csvfile = open('dummy_train.csv')
 # TRAINING_DATA_LEN = 9
@@ -137,6 +137,7 @@ for epoch in range(10000):
 
         sample_num += batch_size
     sample_num = 0
+
 
     if epoch % 10 == 0:
         print('accuracy:', np.average(accuracies[-10:-1]))

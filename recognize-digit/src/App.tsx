@@ -23,7 +23,7 @@ const Cell: React.FC<
 
 const Grid: React.FC<{}> = ({}) => {
   const sz = 28;
-  const scale = 2;
+  const scale = 1;
   const N = scale * 28;
   const [grid, setGrid] = useState<number[][]>(
     new Array(N).fill(0).map(() => new Array(N).fill(0))
