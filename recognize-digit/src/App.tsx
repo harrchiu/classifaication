@@ -3,6 +3,8 @@ import './App.css';
 import { BarController } from 'chart.js';
 import { eval_grid } from './draw';
 
+const CLEAR_KEY = 'c'
+
 const Cell: React.FC<
   {
     value: number;
@@ -21,13 +23,50 @@ const Cell: React.FC<
   );
 };
 
+// test again
 const Grid: React.FC<{}> = ({}) => {
   const sz = 28;
-  const scale = 1;
+  const scale = 3;
   const N = scale * 28;
   const [grid, setGrid] = useState<number[][]>(
     new Array(N).fill(0).map(() => new Array(N).fill(0))
   );
+  const [isDrawOn, setIsDrawOn] = useState(false)
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key === " "){
+      setIsDrawOn(true)
+    }
+    else if (e.key === CLEAR_KEY){
+      setGrid(new Array(N).fill(0).map(() => new Array(N).fill(0)))
+    }
+  }
+
+  const handleKeyUp = (e: KeyboardEvent) => {
+    if (e.key === " "){
+      setIsDrawOn(false)
+    }
+  }
+
+  const handleMouseDown = (e: MouseEvent) => {
+    setIsDrawOn(true)
+  }
+  const handleMouseUp = (e: MouseEvent) => {
+    setIsDrawOn(false)
+  }
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown)
+    document.addEventListener("keyup", handleKeyUp)
+    document.addEventListener("mousedown", handleMouseDown)
+    document.addEventListener("mouseup", handleMouseUp)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keyup', handleKeyUp);
+      document.addEventListener("mousedown", handleMouseDown)
+      document.addEventListener("mouseup", handleMouseUp)
+    };
+  })
 
   const predict = () => {
     const shortened = new Array(sz).fill(0).map(() => new Array(sz).fill(0));
@@ -47,6 +86,21 @@ const Grid: React.FC<{}> = ({}) => {
   return (
     <>
       <div className='drawing-grid'>
+      <div style={{marginBottom: '5px',display: 'flex', alignItems: 'end', flexDirection:'row', justifyContent:'space-between', gap: '5px'}}>
+        <div >
+          <a 
+            href="https://github.com/harrchiu/classifaication"   
+            target="_blank"
+            rel="noreferrer"
+          >
+            GitHub
+          </a>
+          <div>{`<${CLEAR_KEY}>`} to clear</div>
+        </div>
+        <div style={{textAlign: 'right'}}>
+          <div>Click or hold {`<space>`} to draw</div>
+        </div>
+      </div>
         {grid.map((row, rowId) => {
           return (
             <div className='drawing-grid__row' key={`row-${rowId}`}>
@@ -56,8 +110,21 @@ const Grid: React.FC<{}> = ({}) => {
                     key={`cell-${rowId}-${colId}`}
                     value={grid[rowId][colId]}
                     onMouseEnter={() => {
+                      if (!isDrawOn){
+                        return
+                      }
                       const newGrid = [...grid];
                       newGrid[rowId][colId] = 255;
+
+                      for (const [r,c] of [[1,0],[0,1],[-1,0],[0,-1]]){
+                        if (0 <= rowId + r && rowId+ r < grid.length && 0 <= colId + c && colId+ c < grid.length){
+                          if (newGrid[rowId+r][colId+c] === 0){
+                            newGrid[rowId+r][colId+c] = 127;
+                          }
+                        }
+                      }
+                      
+
                       setGrid(newGrid);
                       console.log(newGrid.flat());
                     }}
@@ -84,6 +151,7 @@ const Grid: React.FC<{}> = ({}) => {
 const App: React.FC<{}> = () => {
   return (
     <div className='app-page'>
+
       <Grid />
       {/* <BarController></BarController> */}
     </div>

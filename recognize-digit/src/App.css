@@ -13,13 +13,14 @@
 .drawing-grid {
   display: flex;
   flex-direction: column;
-  .drawing-grid__row {
-    display: flex;
-    flex-direction: row;
-  }
+}
+
+.drawing-grid__row {
+  display: flex;
+  flex-direction: row;
 }
 
 .grid-cell {
-  width: 0.45rem;
+  width: 0.4rem;
   height: 0.4rem;
 }
