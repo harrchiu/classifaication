@@ -86,7 +86,7 @@ const Grid: React.FC<{}> = ({}) => {
   return (
     <>
       <div className="drawing-grid">
-        <div
+        {/* <div
           style={{
             marginBottom: "5px",
             display: "flex",
@@ -109,6 +109,44 @@ const Grid: React.FC<{}> = ({}) => {
           <div style={{ textAlign: "right" }}>
             <div>Click or hold {`<space>`} to draw</div>
           </div>
+        </div> */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "5px",
+            position: "absolute",
+            left: "20px",
+            top: "20px",
+          }}
+        >
+          <a
+            href="https://github.com/harrchiu/classifaication"
+            target="_blank"
+            rel="noreferrer"
+          >
+            GitHub
+          </a>
+          <a
+            href="https://linkedin.com/in/harrchiu"
+            target="_blank"
+            rel="noreferrer"
+          >
+            @harrchiu
+          </a>
+        </div>
+        <div
+          style={{
+            width: "16.8rem",
+            display: "flex",
+            justifyContent: "start",
+            flexDirection: "column",
+            gap: "1px",
+            marginBottom: "8px",
+          }}
+        >
+          <div>{`<${CLEAR_KEY}>`} to clear</div>
+          <div>Click or hold {`<space>`} to draw</div>
         </div>
         {grid.map((row, rowId) => {
           return (
@@ -169,6 +207,7 @@ const App: React.FC<{}> = () => {
         >
           dataset
         </a>
+        ...
       </div>
       {/* <BarController></BarController> */}
     </div>
