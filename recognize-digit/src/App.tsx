@@ -1,9 +1,9 @@
-import React, { HTMLProps, useEffect, useMemo, useRef, useState } from 'react';
-import './App.css';
-import { BarController } from 'chart.js';
-import { eval_grid } from './draw';
+import React, { HTMLProps, useEffect, useMemo, useRef, useState } from "react";
+import "./App.css";
+import { BarController } from "chart.js";
+import { eval_grid } from "./draw";
 
-const CLEAR_KEY = 'c'
+const CLEAR_KEY = "c";
 
 const Cell: React.FC<
   {
@@ -13,7 +13,7 @@ const Cell: React.FC<
   const darkness = 255 - value;
   return (
     <div
-      className='grid-cell'
+      className="grid-cell"
       style={{
         backgroundColor: `rgb(${darkness}, ${darkness}, ${darkness})`,
         // border: '0.1px solid black',
@@ -26,47 +26,46 @@ const Cell: React.FC<
 // test again
 const Grid: React.FC<{}> = ({}) => {
   const sz = 28;
-  const scale = 3;
+  const scale = 1;
   const N = scale * 28;
   const [grid, setGrid] = useState<number[][]>(
     new Array(N).fill(0).map(() => new Array(N).fill(0))
   );
-  const [isDrawOn, setIsDrawOn] = useState(false)
+  const [isDrawOn, setIsDrawOn] = useState(false);
 
   const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === " "){
-      setIsDrawOn(true)
+    if (e.key === " ") {
+      setIsDrawOn(true);
+    } else if (e.key === CLEAR_KEY) {
+      setGrid(new Array(N).fill(0).map(() => new Array(N).fill(0)));
     }
-    else if (e.key === CLEAR_KEY){
-      setGrid(new Array(N).fill(0).map(() => new Array(N).fill(0)))
-    }
-  }
+  };
 
   const handleKeyUp = (e: KeyboardEvent) => {
-    if (e.key === " "){
-      setIsDrawOn(false)
+    if (e.key === " ") {
+      setIsDrawOn(false);
     }
-  }
+  };
 
   const handleMouseDown = (e: MouseEvent) => {
-    setIsDrawOn(true)
-  }
+    setIsDrawOn(true);
+  };
   const handleMouseUp = (e: MouseEvent) => {
-    setIsDrawOn(false)
-  }
+    setIsDrawOn(false);
+  };
 
   useEffect(() => {
-    document.addEventListener("keydown", handleKeyDown)
-    document.addEventListener("keyup", handleKeyUp)
-    document.addEventListener("mousedown", handleMouseDown)
-    document.addEventListener("mouseup", handleMouseUp)
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("keyup", handleKeyUp);
+    document.addEventListener("mousedown", handleMouseDown);
+    document.addEventListener("mouseup", handleMouseUp);
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('keyup', handleKeyUp);
-      document.addEventListener("mousedown", handleMouseDown)
-      document.addEventListener("mouseup", handleMouseUp)
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keyup", handleKeyUp);
+      document.addEventListener("mousedown", handleMouseDown);
+      document.addEventListener("mouseup", handleMouseUp);
     };
-  })
+  });
 
   const predict = () => {
     const shortened = new Array(sz).fill(0).map(() => new Array(sz).fill(0));
@@ -85,45 +84,61 @@ const Grid: React.FC<{}> = ({}) => {
 
   return (
     <>
-      <div className='drawing-grid'>
-      <div style={{marginBottom: '5px',display: 'flex', alignItems: 'end', flexDirection:'row', justifyContent:'space-between', gap: '5px'}}>
-        <div >
-          <a 
-            href="https://github.com/harrchiu/classifaication"   
-            target="_blank"
-            rel="noreferrer"
-          >
-            GitHub
-          </a>
-          <div>{`<${CLEAR_KEY}>`} to clear</div>
+      <div className="drawing-grid">
+        <div
+          style={{
+            marginBottom: "5px",
+            display: "flex",
+            alignItems: "end",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            gap: "5px",
+          }}
+        >
+          <div>
+            <a
+              href="https://github.com/harrchiu/classifaication"
+              target="_blank"
+              rel="noreferrer"
+            >
+              GitHub
+            </a>
+            <div>{`<${CLEAR_KEY}>`} to clear</div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div>Click or hold {`<space>`} to draw</div>
+          </div>
         </div>
-        <div style={{textAlign: 'right'}}>
-          <div>Click or hold {`<space>`} to draw</div>
-        </div>
-      </div>
         {grid.map((row, rowId) => {
           return (
-            <div className='drawing-grid__row' key={`row-${rowId}`}>
+            <div className="drawing-grid__row" key={`row-${rowId}`}>
               {row.map((cell, colId) => {
                 return (
                   <Cell
                     key={`cell-${rowId}-${colId}`}
                     value={grid[rowId][colId]}
                     onMouseEnter={() => {
-                      if (!isDrawOn){
-                        return
+                      if (!isDrawOn) {
+                        return;
                       }
                       const newGrid = [...grid];
                       newGrid[rowId][colId] = 255;
 
-                      for (const [r,c] of [[1,0],[0,1],[-1,0],[0,-1]]){
-                        if (0 <= rowId + r && rowId+ r < grid.length && 0 <= colId + c && colId+ c < grid.length){
-                          if (newGrid[rowId+r][colId+c] === 0){
-                            newGrid[rowId+r][colId+c] = 127;
+                      const dirs = [0, 1, 1, -1, 0, -1, -1, 1, 0];
+                      for (let i = 0; i < 9; i += 1) {
+                        const [r, c] = [dirs[i], dirs[(i + 1) % 9]];
+                        if (
+                          0 <= rowId + r &&
+                          rowId + r < grid.length &&
+                          0 <= colId + c &&
+                          colId + c < grid.length
+                        ) {
+                          if (newGrid[rowId + r][colId + c] === 0) {
+                            newGrid[rowId + r][colId + c] =
+                              Math.random() * 200 + 55;
                           }
                         }
                       }
-                      
 
                       setGrid(newGrid);
                       console.log(newGrid.flat());
@@ -135,7 +150,7 @@ const Grid: React.FC<{}> = ({}) => {
           );
         })}
       </div>
-      <div style={{ display: ' flex', height: '40px', justifyContent: 'row' }}>
+      <div style={{ display: "flex", height: "40px", justifyContent: "row" }}>
         {predict().map((res: number, ind: number) => {
           return (
             <div key={`dig-${ind}`} style={{ fontSize: `${res * 20 + 4}px` }}>
@@ -150,9 +165,19 @@ const Grid: React.FC<{}> = ({}) => {
 
 const App: React.FC<{}> = () => {
   return (
-    <div className='app-page'>
-
+    <div className="app-page">
       <Grid />
+      <div style={{ textAlign: "left", fontSize: "11px" }}>
+        For best results, write large, write centred, and just write smth from
+        the{" "}
+        <a
+          href="https://www.google.com/search?sca_esv=558970703&q=mnist+dataset&tbm=isch&source=lnms&sa=X&ved=2ahUKEwjK9Innt--AAxVRl4kEHUOWDBUQ0pQJegQIDBAB&biw=1582&bih=871&dpr=2#imgrc=u8BarxpjCS7zIM"
+          target="_blank"
+          rel="noreferrer"
+        >
+          dataset
+        </a>
+      </div>
       {/* <BarController></BarController> */}
     </div>
   );
