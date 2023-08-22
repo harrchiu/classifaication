@@ -26,6 +26,7 @@ const Cell: React.FC<
 // test again
 const Grid: React.FC<{}> = ({}) => {
   const sz = 28;
+  const penExtra = 1;
   const scale = 1;
   const N = scale * 28;
   const [grid, setGrid] = useState<number[][]>(
@@ -124,24 +125,15 @@ const Grid: React.FC<{}> = ({}) => {
                       const newGrid = [...grid];
                       newGrid[rowId][colId] = 255;
 
-                      const dirs = [0, 1, 1, -1, 0, -1, -1, 1, 0];
-                      for (let i = 0; i < 9; i += 1) {
-                        const [r, c] = [dirs[i], dirs[(i + 1) % 9]];
-                        if (
-                          0 <= rowId + r &&
-                          rowId + r < grid.length &&
-                          0 <= colId + c &&
-                          colId + c < grid.length
-                        ) {
+                      for (let r = -penExtra; r < penExtra; r += 1) {
+                        for (let c = -penExtra; c < penExtra; c += 1) {
                           if (newGrid[rowId + r][colId + c] === 0) {
                             newGrid[rowId + r][colId + c] =
-                              Math.random() * 200 + 55;
+                              200 + Math.random() * 55;
                           }
                         }
                       }
-
                       setGrid(newGrid);
-                      console.log(newGrid.flat());
                     }}
                   ></Cell>
                 );
